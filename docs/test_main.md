@@ -1,6 +1,6 @@
-# test_main.py — Tests del Punto de Entrada
+# test_main.py — Tests del Punto de Entrada (con Bucle y Salida)
 
-Módulo de pruebas unitarias para verificar el comportamiento del punto de entrada de la aplicación (`main.py`) y la función `menu_interactivo()` de `app/ui.py`, usando `pytest` con `monkeypatch` y `capsys`.
+Módulo de pruebas unitarias para verificar el comportamiento del punto de entrada de la aplicación (`main.py`) y la función `menu_interactivo()` de `app/ui.py` en su versión con bucle continuo y opción de salida. Usa `monkeypatch` para simular entradas y `capsys` para capturar la salida en pantalla.
 
 ---
 
@@ -9,7 +9,6 @@ Módulo de pruebas unitarias para verificar el comportamiento del punto de entra
 | Módulo | Uso |
 |---|---|
 | `pytest` | Framework de testing |
-| `main` | Módulo principal del proyecto |
 | `app.ui.menu_interactivo` | Función bajo prueba |
 
 ---
@@ -18,16 +17,18 @@ Módulo de pruebas unitarias para verificar el comportamiento del punto de entra
 
 | Fixture | Descripción |
 |---|---|
-| `monkeypatch` | Simula entradas del usuario reemplazando `builtins.input` |
-| `capsys` | Captura la salida estándar (`stdout`) para verificar el resultado impreso |
+| `monkeypatch` | Reemplaza `builtins.input` para simular entradas del usuario sin interacción real |
+| `capsys` | Captura la salida estándar (`stdout`) para verificar los mensajes impresos en pantalla |
+
+> **Nota:** Al tratarse de un bucle `while True`, todas las secuencias de entradas deben incluir `"salir"` o la opción `"3"` al final para romper el bucle y evitar que el test quede bloqueado indefinidamente.
 
 ---
 
 # Casos de prueba
 
-## `test_ejecucion_main_flujo_completo_normal` — Flujo Normal (N)
+## `test_ejecucion_main_flujo_completo_normal` — Normal (N)
 
-Verifica que ante una interacción completa y válida, el cálculo y el resumen de pago sean correctos.
+Verifica que ante una interacción completa y válida el cálculo sea correcto y el programa finalice al recibir `"salir"`.
 
 | Entrada simulada | Valor |
 |---|---|
@@ -35,18 +36,19 @@ Verifica que ante una interacción completa y válida, el cálculo y el resumen 
 | Tipo de propina | `1` (porcentaje) |
 | Porcentaje | `15%` |
 | Número de personas | `2` |
+| Segunda iteración | `"salir"` |
 
 **Resultado esperado en pantalla:**
 ```
 Por persona:   $115.00
 ```
-> Total con propina: $230.00 / 2 personas = $115.00
+> $200.00 + $30.00 propina = $230.00 / 2 personas = $115.00
 
 ---
 
 ## `test_ejecucion_main_limite_propina_cero` — Límite (L)
 
-Verifica el comportamiento cuando se aplica una propina del 0%, asegurando que el sistema no falle y muestre el resultado correcto.
+Verifica el comportamiento cuando se aplica una propina del 0%, asegurando que el resultado sea correcto y el programa salga limpiamente.
 
 | Entrada simulada | Valor |
 |---|---|
@@ -54,6 +56,7 @@ Verifica el comportamiento cuando se aplica una propina del 0%, asegurando que e
 | Tipo de propina | `1` (porcentaje) |
 | Porcentaje | `0%` |
 | Número de personas | `1` |
+| Segunda iteración | `"salir"` |
 
 **Resultado esperado en pantalla:**
 ```
@@ -64,36 +67,34 @@ Propina:       $0.00
 
 ## `test_ejecucion_main_error_entrada_vacia` — Error (E)
 
-Verifica que el programa maneje sin colapsar una entrada vacía al solicitar el monto de la cuenta (el usuario presiona Enter sin escribir nada).
+Verifica que el programa capture una entrada vacía sin colapsar, muestre el mensaje de error y permita al usuario continuar hasta salir.
 
 | Entrada simulada | Valor |
 |---|---|
 | Monto de la cuenta | `""` (vacío) |
+| Segunda iteración | `"salir"` |
 
 **Resultado esperado en pantalla:**
 ```
 Error de entrada
 ```
-> La excepción `ValueError` es capturada por el bloque `try-except` de `ui.py`.
+> `float("")` genera un `ValueError` capturado por el bloque `try-except`. El bucle continúa y permite al usuario volver a intentarlo o salir.
 
 ---
 
-## `test_ejecucion_main_edge_muchas_personas` — Edge Case
+## `test_ejecucion_main_edge_opcion_salir_directa` — Edge Case
 
-Verifica que la división de la cuenta funcione correctamente ante un número muy elevado de personas.
+Verifica que seleccionar la opción `3` en el menú de tipo de propina finalice el programa correctamente, sin necesidad de escribir `"salir"`.
 
 | Entrada simulada | Valor |
 |---|---|
 | Total de la cuenta | `100` |
-| Tipo de propina | `2` (monto fijo) |
-| Monto fijo | `0` |
-| Número de personas | `1000` |
+| Tipo de propina | `3` (salir) |
 
 **Resultado esperado en pantalla:**
 ```
-Por persona:   $0.10
+¡Hasta luego! 👋
 ```
-> $100.00 / 1000 personas = $0.10
 
 ---
 
@@ -101,10 +102,20 @@ Por persona:   $0.10
 
 | Test | Categoría | Escenario | Resultado esperado |
 |---|---|---|---|
-| `test_ejecucion_main_flujo_completo_normal` | Normal | Flujo válido completo con porcentaje | `Por persona: $115.00` |
-| `test_ejecucion_main_limite_propina_cero` | Límite | Propina del 0% | `Propina: $0.00` |
-| `test_ejecucion_main_error_entrada_vacia` | Error | Entrada vacía en el monto | `Error de entrada` |
-| `test_ejecucion_main_edge_muchas_personas` | Edge | División entre 1000 personas | `Por persona: $0.10` |
+| `test_ejecucion_main_flujo_completo_normal` | Normal | Flujo completo con porcentaje + salir | `Por persona: $115.00` |
+| `test_ejecucion_main_limite_propina_cero` | Límite | Propina del 0% + salir | `Propina: $0.00` |
+| `test_ejecucion_main_error_entrada_vacia` | Error | Entrada vacía + salir | `Error de entrada` |
+| `test_ejecucion_main_edge_opcion_salir_directa` | Edge | Opción `3` en menú de propina | `¡Hasta luego! 👋` |
+
+---
+
+# Diferencias respecto a la versión anterior
+
+| Comportamiento | Versión anterior | Esta versión |
+|---|---|---|
+| Fin del bucle | No había bucle, el programa terminaba solo | Requiere `"salir"` u opción `3` para romper el `while True` |
+| Test de salida directa | No contemplado | Nuevo caso Edge con opción `3` del menú |
+| Error de entrada vacía | El programa terminaba tras el error | El bucle continúa; se añade `"salir"` para finalizar el test |
 
 ---
 
