@@ -32,12 +32,16 @@ CALCULADORA_PROPINAS/
 │   ├── asistencia_ia.md        # Documentación de asistencia IA
 │   ├── logic.md                # Docs del módulo logic
 │   ├── main.md                 # Docs del módulo main
+│   ├── test_logic.md           # Docs de los tests de lógica
+│   ├── test_main.md            # Docs de los tests del punto de entrada
+│   ├── test_ui.md              # Docs de los tests de interfaz de usuario
+│   ├── test_utils.md           # Docs de los tests de utilidades
 │   ├── ui.md                   # Docs del módulo ui
 │   └── utils.md                # Docs del módulo utils
 ├── tests/
-│   ├── test_iu.py              # Tests de la interfaz de usuario
 │   ├── test_logic.py           # Tests de la lógica de negocio
 │   ├── test_main.py            # Tests del punto de entrada
+│   ├── test_ui.py              # Tests de la interfaz de usuario
 │   └── test_utils.py           # Tests de las utilidades
 ├── .gitignore
 ├── conftest.py                 # Configuración global de pytest
@@ -52,7 +56,7 @@ CALCULADORA_PROPINAS/
 
 # ⚙️ Requisitos
 
-- Python 3.8 o superior
+- Python 3.14
 - Dependencias listadas en `requirements.txt`
 
 ---
