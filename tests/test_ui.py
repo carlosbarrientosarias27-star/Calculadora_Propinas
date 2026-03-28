@@ -1,13 +1,25 @@
 import pytest
 from app.ui import menu_interactivo
 
-# --- Pruebas para menu_interactivo ---
+# --- Pruebas para menu_interactivo (Versión con Bucle y Salida) ---
 
-def test_menu_interactivo_flujo_porcentaje_normal(monkeypatch, capsys):
-    """N: Simula un flujo completo usando porcentaje (10% de 100 entre 2)."""
+def test_menu_interactivo_salir_inmediato(monkeypatch, capsys):
+    """N: Verifica que el programa termine correctamente al escribir 'salir' al inicio."""
     # Arrange
-    # Simulamos entradas: Cuenta(100), Opción(1), Porcentaje(10), Personas(2)
-    entradas = iter(["100", "1", "10", "2"])
+    monkeypatch.setattr("builtins.input", lambda _: "salir")
+
+    # Act
+    menu_interactivo()
+    captura = capsys.readouterr()
+
+    # Assert
+    assert "¡Gracias por usar la calculadora! 👋" in captura.out
+
+
+def test_menu_interactivo_opcion_salir_menu(monkeypatch, capsys):
+    """N: Verifica que la opción '3' del menú de propinas finalice el programa."""
+    # Arrange
+    entradas = iter(["100", "3"])
     monkeypatch.setattr("builtins.input", lambda _: next(entradas))
 
     # Act
@@ -15,15 +27,28 @@ def test_menu_interactivo_flujo_porcentaje_normal(monkeypatch, capsys):
     captura = capsys.readouterr()
 
     # Assert
-    # Verificamos que el cálculo final por persona sea correcto ($55.00)
+    assert "¡Hasta luego! 👋" in captura.out
+
+
+def test_menu_interactivo_flujo_normal_y_salir(monkeypatch, capsys):
+    """N: Realiza un cálculo completo y luego sale del programa."""
+    # Arrange
+    # Flujo: Cuenta(100) -> Opción(1) -> Pct(10) -> Personas(2) -> Salir
+    entradas = iter(["100", "1", "10", "2", "salir"])
+    monkeypatch.setattr("builtins.input", lambda _: next(entradas))
+
+    # Act
+    menu_interactivo()
+    captura = capsys.readouterr()
+
+    # Assert
     assert "Por persona:   $55.00" in captura.out
 
 
-def test_menu_interactivo_flujo_monto_fijo_normal(monkeypatch, capsys):
-    """N: Simula un flujo completo usando monto fijo ($20 de propina)."""
+def test_menu_interactivo_limite_personas_minimo(monkeypatch, capsys):
+    """L: Verifica el cálculo cuando se divide entre el límite inferior (1 persona)."""
     # Arrange
-    # Entradas: Cuenta(80), Opción(2), Monto Fijo(20), Personas(4)
-    entradas = iter(["80", "2", "20", "4"])
+    entradas = iter(["50", "2", "10", "1", "salir"])
     monkeypatch.setattr("builtins.input", lambda _: next(entradas))
 
     # Act
@@ -31,29 +56,15 @@ def test_menu_interactivo_flujo_monto_fijo_normal(monkeypatch, capsys):
     captura = capsys.readouterr()
 
     # Assert
-    # Total 100 / 4 personas = $25.00
-    assert "Por persona:   $25.00" in captura.out
+    assert "Total General: $60.00" in captura.out
 
 
-def test_menu_interactivo_limite_una_persona(monkeypatch, capsys):
-    """L: Verifica el resumen cuando la cuenta se divide entre una sola persona."""
+def test_menu_interactivo_error_valor_no_numerico(monkeypatch, capsys):
+    """E: Verifica que el programa capture letras donde espera números y no se cierre."""
     # Arrange
-    entradas = iter(["50", "1", "0", "1"])
+    # Intentamos poner letras en la cuenta, el try/except captura y el bucle sigue, luego salimos.
+    entradas = iter(["abc", "salir"])
     monkeypatch.setattr("builtins.input", lambda _: next(entradas))
-
-    # Act
-    menu_interactivo()
-    captura = capsys.readouterr()
-
-    # Assert
-    assert "Por persona:   $50.00" in captura.out
-
-
-def test_menu_interactivo_error_entrada_no_numerica(monkeypatch, capsys):
-    """E: Verifica el manejo de error cuando el usuario ingresa texto en lugar de números."""
-    # Arrange
-    # Simulamos que el usuario escribe "hola" en la cuenta
-    monkeypatch.setattr("builtins.input", lambda _: "hola")
 
     # Act
     menu_interactivo()
@@ -63,12 +74,11 @@ def test_menu_interactivo_error_entrada_no_numerica(monkeypatch, capsys):
     assert "Error de entrada" in captura.out
 
 
-def test_menu_interactivo_edge_opcion_invalida(monkeypatch, capsys):
-    """Edge: Verifica que si se elige una opción inexistente (ej. '3'), la propina sea 0."""
+def test_menu_interactivo_edge_opcion_invalida_continua(monkeypatch, capsys):
+    """Edge: Verifica que una opción de menú inválida asuma propina 0 y permita continuar."""
     # Arrange
-    # Cuenta(100), Opción inválida(3), Personas(1)
-    # Nota: El código actual no pide monto si la opción no es 1 o 2
-    entradas = iter(["100", "3", "1"])
+    # Cuenta(100), Opción inválida(9), Personas(1), Salir
+    entradas = iter(["100", "9", "1", "salir"])
     monkeypatch.setattr("builtins.input", lambda _: next(entradas))
 
     # Act
@@ -76,4 +86,4 @@ def test_menu_interactivo_edge_opcion_invalida(monkeypatch, capsys):
     captura = capsys.readouterr()
 
     # Assert
-    assert "Propina:       $0.00" in captura.out
+    assert "Opción no válida. Se usará 0 de propina." in captura.out
