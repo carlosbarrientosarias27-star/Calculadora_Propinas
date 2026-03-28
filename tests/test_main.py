@@ -7,24 +7,22 @@ from app.ui import menu_interactivo
 def test_ejecucion_main_flujo_completo_normal(monkeypatch, capsys):
     """N: Verifica que la ejecución principal inicie el menú y procese una cuenta válida."""
     # Arrange
-    # Simulamos una interacción completa: Cuenta(200), Opción(1), Porcentaje(15), Personas(2)
-    entradas = iter(["200", "1", "15", "2"])
+    # Agregamos "salir" al final para romper el bucle while True
+    entradas = iter(["200", "1", "15", "2", "salir"]) 
     monkeypatch.setattr("builtins.input", lambda _: next(entradas))
 
     # Act
-    # Invocamos la función que el bloque __main__ llamaría
     menu_interactivo()
     captura = capsys.readouterr()
 
     # Assert
-    # Verificamos que el cálculo ($230 total / 2) aparezca en el resumen
     assert "Por persona:   $115.00" in captura.out
 
 def test_ejecucion_main_limite_propina_cero(monkeypatch, capsys):
     """L: Verifica el comportamiento del punto de entrada con propina del 0%."""
     # Arrange
-    # Entradas: Cuenta(100), Opción(1), Porcentaje(0), Personas(1)
-    entradas = iter(["100", "1", "0", "1"])
+    # Entradas: Cuenta(100), Opción(1), Porcentaje(0), Personas(1), Salir
+    entradas = iter(["100", "1", "0", "1", "salir"])
     monkeypatch.setattr("builtins.input", lambda _: next(entradas))
 
     # Act
