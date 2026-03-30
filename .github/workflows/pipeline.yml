@@ -9,15 +9,21 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    strategy:
+      # 'fail-fast: false' asegura que si la 3.14 falla, 
+      # las demás versiones (como la 3.12) terminen de probarse.
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13", "3.14-dev"]
 
     steps:
     - name: Descargar código del repositorio
       uses: actions/checkout@v4
 
-    - name: Configurar Python
+    - name: Configurar Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
-        python-version: '3.14' # Puedes cambiarla a la versión que uses
+        python-version: ${{ matrix.python-version }}
 
     - name: Instalar dependencias
       run: |
