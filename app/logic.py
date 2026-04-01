@@ -1,5 +1,3 @@
-import math 
-
 def calcular_propina_porcentaje(monto_cuenta, porcentaje):
     """
     Calcula el monto de la propina basado en un porcentaje.
@@ -20,7 +18,7 @@ def calcular_propina_fija(monto_cuenta, monto_propina):
 def dividir_cuenta(monto_total, num_personas):
     """
     Divide el total (cuenta + propina) entre el número de personas.
-    Retorna el monto por persona redondeado a 2 decimales.
+    Retorna el monto por persona redondeado a 4 decimales.
     """
     if num_personas <= 0:
         raise ValueError("El número de personas debe ser al menos 1.")
